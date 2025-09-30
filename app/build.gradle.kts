@@ -2,6 +2,8 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("kotlin-kapt") // cho room-compiler
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0" // cho kotlinx.serialization
 }
 
 android {
@@ -69,4 +71,16 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+
+    // Room Core
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+
+// Room + Kotlin Coroutines support
+    implementation("androidx.room:room-ktx:2.6.1")
+
+// Room + Kotlin Serialization support
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+
 }
