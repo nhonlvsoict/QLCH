@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable  // Nhập hàm để định nghĩa điểm đến composable trong điều hướng
 import androidx.navigation.compose.rememberNavController  // Nhập hàm để tạo và ghi nhớ NavController
+import ui.HomeScreen
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,6 +25,7 @@ fun MyAppNavigation(startDestination: String) {  // Định nghĩa hàm điều 
     NavHost(navController = navController, startDestination = startDestination) {  // Thiết lập NavHost với bộ điều khiển và điểm bắt đầu
 
         composable("home") {  // Định nghĩa điểm đến "login"
+            HomeScreen(navController)
         }
     }
 }
