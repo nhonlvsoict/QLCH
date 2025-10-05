@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "shopName": "LeSon",
+    "currency": "GBP"
+  },
+  "items": [
+    {
+      "name": "Spring Rolls (2pcs)",
+      "price": 560,
+      "category": "Starters"
+    },
+    {
+      "name": "Beef Noodle (Pho)",
+      "price": 1250,
+      "category": "Noodle"
+    },
+    {
+      "name": "Vietnamese Coffee",
+      "price": 390,
+      "category": "Coffee"
+    }
+  ]
+}
