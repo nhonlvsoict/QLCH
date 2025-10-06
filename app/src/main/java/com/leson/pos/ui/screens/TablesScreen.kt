@@ -10,15 +10,27 @@ import androidx.compose.ui.unit.dp
 import com.leson.pos.data.repo.Repo
 import com.leson.pos.ui.widgets.NewOrderDialog
 import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+
 
 @Composable
 fun TablesScreen(onCreateOrder: (String)->Unit, onManageMenu: ()->Unit) {
   val orders by Repo.observeOpenOrders().collectAsState(initial = emptyList())
   var showDialog by remember { mutableStateOf(false) }
 
+  @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
   Scaffold(
     topBar = { TopAppBar(title = { Text("LeSon – Tables") }, actions = { TextButton(onClick = onManageMenu){ Text("Manage Menu") } }) },
-    floatingActionButton = { ExtendedFloatingActionButton(onClick = { showDialog = true }, text={ Text("New Order") }) }
+    floatingActionButton = {
+      ExtendedFloatingActionButton(
+        onClick = { showDialog = true },
+        icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+        text = { Text("New Order") }
+      )
+    }
   ) { p ->
     Column(Modifier.padding(p)) {
       LazyColumn {
