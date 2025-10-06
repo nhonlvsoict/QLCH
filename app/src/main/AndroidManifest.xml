@@ -4,7 +4,7 @@
       android:name=".LeSonApp"
       android:allowBackup="true"
       android:supportsRtl="true"
-      android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+      android:theme="@style/Theme.LeSonPOS">
 
     <activity
         android:name=".MainActivity"
