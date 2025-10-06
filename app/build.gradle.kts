@@ -27,7 +27,7 @@ android {
         // isCoreLibraryDesugaringEnabled = true
     }
 
-    // Make Kotlin bytecode target 17 (keeps Compose happy too)
+  // Make Kotlin bytecode target 17 (keeps Compose happy too)
   kotlinOptions {
     jvmTarget = "17"
     freeCompilerArgs += listOf(
