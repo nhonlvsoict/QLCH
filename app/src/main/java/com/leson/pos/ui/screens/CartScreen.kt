@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,7 +34,7 @@ fun CartScreen() {
   val copies = remember { mutableStateOf(3) }
   val copiesText = remember { mutableStateOf("3") }
 
-  androidx.compose.material3.Scaffold(
+  Scaffold(
     topBar = { TopAppBar(title = { Text("Cart") }) },
     bottomBar = {
       BottomAppBar {
@@ -52,17 +53,16 @@ fun CartScreen() {
         }
         Spacer(Modifier.weight(1f))
         TextButton(onClick = {
-          // You would look up the real orderId here
-          // val id = currentOrderId
-          // printAdapterForOrder(context, id, copies.value, finalBill = false)
+          // val pm = ctx.getSystemService(Context.PRINT_SERVICE) as PrintManager
+          // pm.print("LeSon-Receipt", printAdapterForOrder(ctx, orderId, copies.value, false), null)
         }) { Text("Print Receipts") }
         Spacer(Modifier.width(8.dp))
         TextButton(onClick = {
-          // pm.print("LeSon-FinalBill", printAdapterForOrder(ctx, id, copies.value, finalBill = true), null)
+          // pm.print("LeSon-FinalBill", printAdapterForOrder(ctx, orderId, copies.value, true), null)
         }) { Text("Print Final Bill") }
       }
     }
-  ) { /* content omitted in MVP stub */ }
+  ) { /* content omitted for MVP stub */ }
 }
 
 fun printAdapterForOrder(ctx: Context, orderId: String, copies: Int, finalBill: Boolean = false): PrintDocumentAdapter {

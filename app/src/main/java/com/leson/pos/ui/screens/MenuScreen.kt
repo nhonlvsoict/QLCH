@@ -3,12 +3,14 @@ package com.leson.pos.ui.screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -24,12 +26,12 @@ import com.leson.pos.data.repo.Repo
 
 @Composable
 fun MenuScreen(tableName: String) {
-  LaunchedEffect(Unit) { /* Ensure Repo is initialized by MainActivity */ }
+  LaunchedEffect(Unit) { /* Repo.init happens in MainActivity */ }
   val menu by Repo.observeMenu().collectAsState(initial = emptyList())
   var copies by remember { mutableStateOf(3) }
-  var copiesText = remember { mutableStateOf("3") }
+  val copiesText = remember { mutableStateOf("3") }
 
-  androidx.compose.material3.Scaffold(
+  Scaffold(
     topBar = {
       TopAppBar(
         title = { Text("Menu – $tableName") },
@@ -47,27 +49,30 @@ fun MenuScreen(tableName: String) {
               modifier = Modifier.width(80.dp)
             )
             Spacer(Modifier.width(8.dp))
-            TextButton(onClick = { /* navigate to cart if wired */ }) { Text("Cart") }
+            TextButton(onClick = { /* TODO: navigate to cart when wired */ }) { Text("Cart") }
           }
         }
       )
     }
   ) { p ->
-    LazyColumn(p) {
+    LazyColumn(Modifier.padding(p)) {
       items(menu) { mi ->
-        var note = remember { mutableStateOf("") }
+        val note = remember { mutableStateOf("") }
         ListItem(
           headlineContent = { Text(mi.name) },
           supportingContent = {
             Column {
               Text("£" + "%.2f".format(mi.priceCents / 100.0))
-              OutlinedTextField(value = note.value, onValueChange = { note.value = it }, label = { Text("Note") })
+              OutlinedTextField(
+                value = note.value,
+                onValueChange = { note.value = it },
+                label = { Text("Note") }
+              )
             }
           },
           trailingContent = {
             TextButton(onClick = {
-              // TODO: ensure an order exists and call Repo.addItem(orderId,...)
-              // Kept out here so this file compiles cleanly; hook it up when your Order flow is ready.
+              // TODO: ensure an order exists and Repo.addItem(orderId, mi.name, mi.priceCents, note.value)
             }) { Text("Add") }
           }
         )
