@@ -24,6 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.leson.pos.data.repo.Repo
 
+import androidx.compose.runtime.setValue
+
+
 @Composable
 fun MenuScreen(tableName: String) {
   LaunchedEffect(Unit) { /* Repo.init happens in MainActivity */ }
