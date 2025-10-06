@@ -19,9 +19,21 @@ android {
   }
 
   buildFeatures { compose = true }
-  composeOptions { kotlinCompilerExtensionVersion = "1.5.15" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.5.15" }    
+  compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        // If you prefer the --release flag explicitly:
+        // isCoreLibraryDesugaringEnabled = true
+    }
+
+    // Make Kotlin bytecode target 17 (keeps Compose happy too)
   kotlinOptions { jvmTarget = "17" }
   packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
+}
+// Tell Kotlin to use the Java 17 toolchain
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
