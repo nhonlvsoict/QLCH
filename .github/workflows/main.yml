@@ -30,9 +30,12 @@ jobs:
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           gradle wrapper --gradle-version 8.7
           ./gradlew --version
+          
+      - name: Kotlin compile (diagnostic)
+        run: ./gradlew clean :app:compileDebugKotlin --no-daemon --stacktrace --info
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
