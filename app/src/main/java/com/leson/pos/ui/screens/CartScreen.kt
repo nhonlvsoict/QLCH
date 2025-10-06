@@ -9,7 +9,6 @@ import android.print.PageRange
 import android.print.PrintAttributes
 import android.print.PrintDocumentAdapter
 import android.print.PrintDocumentInfo
-import android.print.PrintManager
 import android.print.pdf.PrintedPdfDocument
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +26,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -35,9 +33,7 @@ import java.util.Locale
 
 @Composable
 fun CartScreen() {
-  val ctx = LocalContext.current
-
-  // Use rememberSaveable to avoid IR issues around remember inline in some toolchains.
+  // Keep state minimal and saveable; avoid CompositionLocals entirely here.
   var copiesText by rememberSaveable { mutableStateOf("3") }
   val copies = copiesText.filter { it.isDigit() }.toIntOrNull()?.coerceIn(1, 10) ?: 3
 
@@ -48,7 +44,7 @@ fun CartScreen() {
     verticalArrangement = Arrangement.spacedBy(12.dp)
   ) {
     Text("Cart")
-    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+    Row {
       Text("Copies:")
       Spacer(Modifier.width(8.dp))
       OutlinedTextField(
@@ -61,22 +57,28 @@ fun CartScreen() {
 
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
       Button(onClick = {
-        // TODO: replace "ORDER_ID_PLACEHOLDER" with your real order id
-        // val pm = ctx.getSystemService(Context.PRINT_SERVICE) as PrintManager
-        // pm.print("LeSon-Receipt", printAdapterForOrder(ctx, orderId, copies, finalBill = false), null)
+        // To print, call from a higher level where you already have a Context:
+        // val pm = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
+        // pm.print("LeSon-Receipt", printAdapterForOrder(context, orderId, copies, finalBill = false), null)
       }) { Text("Print Receipts") }
 
       Button(onClick = {
-        // val pm = ctx.getSystemService(Context.PRINT_SERVICE) as PrintManager
-        // pm.print("LeSon-FinalBill", printAdapterForOrder(ctx, orderId, copies, finalBill = true), null)
+        // pm.print("LeSon-FinalBill", printAdapterForOrder(context, orderId, copies, finalBill = true), null)
       }) { Text("Print Final Bill") }
     }
   }
 }
 
-fun printAdapterForOrder(ctx: Context, orderId: String, copies: Int, finalBill: Boolean = false): PrintDocumentAdapter {
+/** Stand-alone adapter; not referenced by CartScreen() to avoid CompositionLocal/Context inlining. */
+fun printAdapterForOrder(
+  ctx: Context,
+  orderId: String,
+  copies: Int,
+  finalBill: Boolean = false
+): PrintDocumentAdapter {
   return object : PrintDocumentAdapter() {
     private var pdf: PrintedPdfDocument? = null
+
     override fun onLayout(
       oldAttributes: PrintAttributes?,
       newAttributes: PrintAttributes,
