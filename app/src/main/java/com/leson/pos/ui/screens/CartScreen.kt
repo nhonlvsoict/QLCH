@@ -11,19 +11,23 @@ import android.print.PrintDocumentAdapter
 import android.print.PrintDocumentInfo
 import android.print.PrintManager
 import android.print.pdf.PrintedPdfDocument
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -31,38 +35,43 @@ import java.util.Locale
 
 @Composable
 fun CartScreen() {
-  val copies = remember { mutableStateOf(3) }
-  val copiesText = remember { mutableStateOf("3") }
+  val ctx = LocalContext.current
 
-  Scaffold(
-    topBar = { TopAppBar(title = { Text("Cart") }) },
-    bottomBar = {
-      BottomAppBar {
-        Row {
-          Text("Copies:")
-          Spacer(Modifier.width(8.dp))
-          OutlinedTextField(
-            value = copiesText.value,
-            onValueChange = { v ->
-              copiesText.value = v
-              copies.value = v.filter { it.isDigit() }.toIntOrNull()?.coerceIn(1, 10) ?: 3
-            },
-            singleLine = true,
-            modifier = Modifier.width(80.dp)
-          )
-        }
-        Spacer(Modifier.weight(1f))
-        TextButton(onClick = {
-          // val pm = ctx.getSystemService(Context.PRINT_SERVICE) as PrintManager
-          // pm.print("LeSon-Receipt", printAdapterForOrder(ctx, orderId, copies.value, false), null)
-        }) { Text("Print Receipts") }
-        Spacer(Modifier.width(8.dp))
-        TextButton(onClick = {
-          // pm.print("LeSon-FinalBill", printAdapterForOrder(ctx, orderId, copies.value, true), null)
-        }) { Text("Print Final Bill") }
-      }
+  // Use rememberSaveable to avoid IR issues around remember inline in some toolchains.
+  var copiesText by rememberSaveable { mutableStateOf("3") }
+  val copies = copiesText.filter { it.isDigit() }.toIntOrNull()?.coerceIn(1, 10) ?: 3
+
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(16.dp),
+    verticalArrangement = Arrangement.spacedBy(12.dp)
+  ) {
+    Text("Cart")
+    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+      Text("Copies:")
+      Spacer(Modifier.width(8.dp))
+      OutlinedTextField(
+        value = copiesText,
+        onValueChange = { v -> copiesText = v },
+        singleLine = true,
+        modifier = Modifier.width(100.dp)
+      )
     }
-  ) { /* content omitted for MVP stub */ }
+
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      Button(onClick = {
+        // TODO: replace "ORDER_ID_PLACEHOLDER" with your real order id
+        // val pm = ctx.getSystemService(Context.PRINT_SERVICE) as PrintManager
+        // pm.print("LeSon-Receipt", printAdapterForOrder(ctx, orderId, copies, finalBill = false), null)
+      }) { Text("Print Receipts") }
+
+      Button(onClick = {
+        // val pm = ctx.getSystemService(Context.PRINT_SERVICE) as PrintManager
+        // pm.print("LeSon-FinalBill", printAdapterForOrder(ctx, orderId, copies, finalBill = true), null)
+      }) { Text("Print Final Bill") }
+    }
+  }
 }
 
 fun printAdapterForOrder(ctx: Context, orderId: String, copies: Int, finalBill: Boolean = false): PrintDocumentAdapter {
@@ -97,14 +106,17 @@ fun printAdapterForOrder(ctx: Context, orderId: String, copies: Int, finalBill: 
         val small = Paint().apply { textSize = 12f }
         var y = 40f
         val title = if (finalBill) "FINAL BILL" else "Receipt"
+
         c.drawText("LeSon Restaurant", 40f, y, paint); y += 20f
         c.drawText("$title — Copy ${i + 1} of $copies", 40f, y, paint); y += 16f
         c.drawText("Order ID: $orderId", 40f, y, small); y += 16f
         c.drawText("Date: $now", 40f, y, small); y += 24f
         c.drawText("Items:", 40f, y, paint); y += 20f
         c.drawText("… identical content for each copy …", 40f, y, small)
+
         pdf!!.finishPage(page)
       }
+
       val out = ParcelFileDescriptor.AutoCloseOutputStream(destination)
       pdf!!.writeTo(out)
       out.close()
