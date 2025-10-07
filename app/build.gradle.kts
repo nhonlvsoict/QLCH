@@ -3,6 +3,7 @@ plugins {
   kotlin("android")
   kotlin("kapt")
   id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.10"
 }
 
 android {
@@ -19,7 +20,7 @@ android {
   }
 
   buildFeatures { compose = true }
-  composeOptions { kotlinCompilerExtensionVersion = "1.6.10" }    
+  // composeOptions { kotlinCompilerExtensionVersion = "1.6.10" }    
   compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
