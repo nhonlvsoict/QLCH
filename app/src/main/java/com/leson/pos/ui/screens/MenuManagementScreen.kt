@@ -42,24 +42,24 @@ import java.util.UUID
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuManagementScreen() {
+    // Avoid remember in default params, avoid tricky lifecycles
     val menuItems by Repo.observeMenu().collectAsState(initial = emptyList())
 
     var showAdd by remember { mutableStateOf(false) }
-    var newName by remember { mutableStateOf("") }
-    var newPrice by remember { mutableStateOf("") } // e.g. "6.50" or "650"
-    var newCategory by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var price by remember { mutableStateOf("") } // "6.50" or "650"
+    var category by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Menu Management") }) }
-    ) { paddingValues ->
+    ) { pv ->
         Column(
             modifier = Modifier
-                .padding(paddingValues)
+                .padding(pv)
                 .padding(16.dp)
         ) {
-            // List
             ElevatedCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(8.dp)) {
                     Text(
@@ -69,13 +69,10 @@ fun MenuManagementScreen() {
                     )
                     Divider()
                     if (menuItems.isEmpty()) {
-                        Text(
-                            "No items yet. Add your first menu item below.",
-                            modifier = Modifier.padding(12.dp)
-                        )
+                        Text("No items yet. Add your first menu item below.", Modifier.padding(12.dp))
                     } else {
                         LazyColumn {
-                            items(menuItems) { mi ->
+                            items(menuItems, key = { it.id }) { mi ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -85,18 +82,14 @@ fun MenuManagementScreen() {
                                 ) {
                                     Column(Modifier.weight(1f)) {
                                         Text(mi.name, style = MaterialTheme.typography.titleSmall)
-                                        Text(
-                                            "£${formatPounds(mi.priceCents)} • ${mi.category}",
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
+                                        Text("£${formatPounds(mi.priceCents)} • ${mi.category}", style = MaterialTheme.typography.bodySmall)
                                     }
                                     Row {
                                         TextButton(onClick = {
-                                            // preload fields for edit
                                             showAdd = true
-                                            newName = mi.name
-                                            newPrice = (mi.priceCents / 100.0).toString()
-                                            newCategory = mi.category
+                                            name = mi.name
+                                            price = (mi.priceCents / 100.0).toString()
+                                            category = mi.category
                                         }) { Text("Edit") }
                                         Spacer(Modifier.width(8.dp))
                                         TextButton(onClick = {
@@ -111,34 +104,31 @@ fun MenuManagementScreen() {
                 }
             }
 
-            // Add / Edit panel
             if (showAdd) {
                 Spacer(Modifier.width(0.dp))
                 ElevatedCard(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp)) {
-                        Text(
-                            if (isEditingExisting(menuItems, newName, newCategory, newPrice)) "Edit Item" else "New Item",
-                            style = MaterialTheme.typography.titleMedium
-                        )
+                        Text(if (isEditingExisting(menuItems, name, category, price)) "Edit Item" else "New Item",
+                            style = MaterialTheme.typography.titleMedium)
                         TextField(
-                            value = newName,
-                            onValueChange = { newName = it },
+                            value = name,
+                            onValueChange = { name = it },
                             label = { Text("Name") },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 8.dp)
                         )
                         TextField(
-                            value = newPrice,
-                            onValueChange = { newPrice = it },
+                            value = price,
+                            onValueChange = { price = it },
                             label = { Text("Price (£)") },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 8.dp)
                         )
                         TextField(
-                            value = newCategory,
-                            onValueChange = { newCategory = it },
+                            value = category,
+                            onValueChange = { category = it },
                             label = { Text("Category") },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -151,32 +141,35 @@ fun MenuManagementScreen() {
                         ) {
                             TextButton(onClick = {
                                 showAdd = false
-                                newName = ""; newPrice = ""; newCategory = ""
+                                name = ""; price = ""; category = ""
                             }) { Text("Cancel") }
                             Spacer(Modifier.width(12.dp))
                             Button(onClick = {
-                                val priceCents = parsePriceToCents(newPrice)
-                                if (priceCents != null && newName.isNotBlank() && newCategory.isNotBlank()) {
+                                val cents = parsePriceToCents(price)
+                                if (cents != null && name.isNotBlank() && category.isNotBlank()) {
                                     val existingId = menuItems.find {
-                                        it.name.equals(newName.trim(), ignoreCase = true) &&
-                                                it.category.equals(newCategory.trim(), ignoreCase = true)
+                                        it.name.equals(name.trim(), true) &&
+                                        it.category.equals(category.trim(), true)
                                     }?.id
                                     val id = existingId ?: UUID.randomUUID().toString()
-
                                     scope.launch(Dispatchers.IO) {
                                         Repo.upsertMenu(
                                             MenuItemEntity(
                                                 id = id,
-                                                name = newName.trim(),
-                                                priceCents = priceCents,
-                                                category = newCategory.trim()
+                                                name = name.trim(),
+                                                priceCents = cents,
+                                                category = category.trim()
                                             )
                                         )
                                     }
                                     showAdd = false
-                                    newName = ""; newPrice = ""; newCategory = ""
+                                    name = ""; price = ""; category = ""
                                 }
-                            }) { Text("Save") }
+                            }) {
+                                Icon(Icons.Filled.Add, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Save")
+                            }
                         }
                     }
                 }
@@ -204,9 +197,8 @@ private fun parsePriceToCents(text: String): Int? {
     val t = text.trim()
     if (t.isEmpty()) return null
     return try {
-        if (t.contains('.')) {
-            (t.toDouble() * 100).toInt()
-        } else {
+        if (t.contains('.')) (t.toDouble() * 100).toInt()
+        else {
             val asInt = t.toInt()
             if (asInt < 100) asInt * 100 else asInt
         }
@@ -224,10 +216,10 @@ private fun isEditingExisting(
     price: String
 ): Boolean {
     if (name.isBlank() || category.isBlank()) return false
-    val priceCents = parsePriceToCents(price) ?: return false
+    val pc = parsePriceToCents(price) ?: return false
     return items.any {
-        it.name.equals(name.trim(), ignoreCase = true) &&
-        it.category.equals(category.trim(), ignoreCase = true) &&
-        it.priceCents == priceCents
+        it.name.equals(name.trim(), true) &&
+        it.category.equals(category.trim(), true) &&
+        it.priceCents == pc
     }
 }
