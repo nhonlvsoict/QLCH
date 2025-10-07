@@ -23,11 +23,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.leson.pos.data.db.entity.MenuItemEntity
 import com.leson.pos.data.repo.Repo
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,13 +46,13 @@ fun MenuManagementScreen() {
 
     var showAdd by remember { mutableStateOf(false) }
     var newName by remember { mutableStateOf("") }
-    var newPrice by remember { mutableStateOf("") } // in pounds (e.g., "6.50") or integer cents ("650")
+    var newPrice by remember { mutableStateOf("") } // e.g. "6.50" or "650"
     var newCategory by remember { mutableStateOf("") }
 
+    val scope = rememberCoroutineScope()
+
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Menu Management") })
-        }
+        topBar = { TopAppBar(title = { Text("Menu Management") }) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -60,10 +60,8 @@ fun MenuManagementScreen() {
                 .padding(16.dp)
         ) {
             // List
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(8.dp)) {
+            ElevatedCard(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(8.dp)) {
                     Text(
                         "Current Items",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
@@ -94,17 +92,15 @@ fun MenuManagementScreen() {
                                     }
                                     Row {
                                         TextButton(onClick = {
-                                            // Simple inline edit: preload fields and open Add panel in "edit mode"
+                                            // preload fields for edit
                                             showAdd = true
                                             newName = mi.name
                                             newPrice = (mi.priceCents / 100.0).toString()
                                             newCategory = mi.category
-                                            // Save will reuse the same path but with the same id
                                         }) { Text("Edit") }
                                         Spacer(Modifier.width(8.dp))
                                         TextButton(onClick = {
-                                            // Delete
-                                            runInIo { Repo.deleteMenu(mi.id) }
+                                            scope.launch(Dispatchers.IO) { Repo.deleteMenu(mi.id) }
                                         }) { Text("Delete") }
                                     }
                                 }
@@ -115,8 +111,6 @@ fun MenuManagementScreen() {
                 }
             }
 
-            Spacer(Modifier.width(0.dp)) // keeps vertical rhythm tidy with previous card padding
-
             // Add / Edit panel
             if (showAdd) {
                 Spacer(Modifier.width(0.dp))
@@ -126,7 +120,6 @@ fun MenuManagementScreen() {
                             if (isEditingExisting(menuItems, newName, newCategory, newPrice)) "Edit Item" else "New Item",
                             style = MaterialTheme.typography.titleMedium
                         )
-                        Spacer(Modifier.width(0.dp))
                         TextField(
                             value = newName,
                             onValueChange = { newName = it },
@@ -164,14 +157,13 @@ fun MenuManagementScreen() {
                             Button(onClick = {
                                 val priceCents = parsePriceToCents(newPrice)
                                 if (priceCents != null && newName.isNotBlank() && newCategory.isNotBlank()) {
-                                    // If an item with same name+category exists, reuse its id for an "edit"
                                     val existingId = menuItems.find {
                                         it.name.equals(newName.trim(), ignoreCase = true) &&
                                                 it.category.equals(newCategory.trim(), ignoreCase = true)
                                     }?.id
-
                                     val id = existingId ?: UUID.randomUUID().toString()
-                                    runInIo {
+
+                                    scope.launch(Dispatchers.IO) {
                                         Repo.upsertMenu(
                                             MenuItemEntity(
                                                 id = id,
@@ -189,7 +181,6 @@ fun MenuManagementScreen() {
                     }
                 }
             } else {
-                // "Add" button
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -198,7 +189,7 @@ fun MenuManagementScreen() {
                 ) {
                     Button(onClick = { showAdd = true }) {
                         Icon(Icons.Filled.Add, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))  // <-- requires import androidx.compose.foundation.layout.width
+                        Spacer(Modifier.width(8.dp))
                         Text("Add Menu Item")
                     }
                 }
@@ -213,11 +204,9 @@ private fun parsePriceToCents(text: String): Int? {
     val t = text.trim()
     if (t.isEmpty()) return null
     return try {
-        // Accept "6.50" or "650" or "6"
         if (t.contains('.')) {
             (t.toDouble() * 100).toInt()
         } else {
-            // If it's less than £20 and only two digits, assume pounds; otherwise assume already cents
             val asInt = t.toInt()
             if (asInt < 100) asInt * 100 else asInt
         }
@@ -226,13 +215,7 @@ private fun parsePriceToCents(text: String): Int? {
     }
 }
 
-private fun formatPounds(cents: Int): String {
-    return String.format("%.2f", cents / 100.0)
-}
-
-private suspend fun runInIo(block: suspend () -> Unit) {
-    withContext(Dispatchers.IO) { block() }
-}
+private fun formatPounds(cents: Int): String = String.format("%.2f", cents / 100.0)
 
 private fun isEditingExisting(
     items: List<MenuItemEntity>,
