@@ -60,8 +60,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
 
-    implementation("com.google.dagger:hilt-android:2.52")
-    kapt("com.google.dagger:hilt-compiler:2.52")
+    // Upgrade Hilt to a newer version that depends on the appropriate JavaPoet
+    implementation("com.google.dagger:hilt-android:2.54")
+    kapt("com.google.dagger:hilt-compiler:2.54")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     implementation("androidx.room:room-runtime:2.6.1")
@@ -71,8 +72,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("com.google.android.material:material:1.12.0")
-    // Add JavaPoet dependency for runtime (existing implementation)
-    implementation("com.squareup:javapoet:1.13.0")
     // Add JavaPoet dependency for annotation processing to fix Hilt AggregateDeps error
     kapt("com.squareup:javapoet:1.13.0")
 }
