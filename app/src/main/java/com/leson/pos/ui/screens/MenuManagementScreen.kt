@@ -45,8 +45,9 @@ import java.util.UUID
 @Composable
 fun MenuManagementScreen() {
     // Observe menu items
-    val menuItems by Repo.observeMenu().collectAsState(initial = emptyList())
-
+   
+        val menuItemsState = Repo.observeMenu().collectAsState(initial = emptyList())
+        val menuItems = menuItemsState.value
     // UI state
     var showAdd by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
