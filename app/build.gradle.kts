@@ -103,4 +103,19 @@ dependencies {
     // Include JavaPoet on both runtime and annotation processor classpaths to avoid missing method errors
     implementation("com.squareup:javapoet:1.13.0")
     kapt("com.squareup:javapoet:1.13.0")
+
+}
+
+// Force the version of JavaPoet for all configurations to ensure that plugins
+// (including the Hilt Gradle plugin) use the compatible API that defines
+// ClassName.canonicalName(). Without this, older transitive versions may be
+// selected for annotation processing tasks, leading to NoSuchMethodError
+// during kaptDebugKotlin or hiltAggregateDepsDebug tasks.
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "com.squareup" && requested.name == "javapoet") {
+            useVersion("1.13.0")
+            because("Ensure JavaPoet 1.13.0 is used everywhere to avoid NoSuchMethodError")
+        }
+    }
 }
