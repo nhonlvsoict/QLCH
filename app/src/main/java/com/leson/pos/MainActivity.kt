@@ -1,10 +1,11 @@
-package com.leson.pos
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -12,8 +13,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.leson.pos.ui.screens.MenuManagementScreen
 import com.leson.pos.ui.screens.MenuScreen
 import com.leson.pos.ui.screens.TablesScreen
-//import com.leson.pos.ui.screens.CartScreen
 import com.leson.pos.data.repo.Repo
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
