@@ -42,12 +42,13 @@ import java.util.UUID
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuManagementScreen() {
-    // Avoid remember in default params, avoid tricky lifecycles
+    // Observe menu items
     val menuItems by Repo.observeMenu().collectAsState(initial = emptyList())
 
+    // UI state
     var showAdd by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
-    var price by remember { mutableStateOf("") } // "6.50" or "650"
+    var price by remember { mutableStateOf("") }     // accepts "6.50", "650", or "6"
     var category by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
@@ -60,6 +61,7 @@ fun MenuManagementScreen() {
                 .padding(pv)
                 .padding(16.dp)
         ) {
+            // List card
             ElevatedCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(8.dp)) {
                     Text(
@@ -68,6 +70,7 @@ fun MenuManagementScreen() {
                         modifier = Modifier.padding(8.dp)
                     )
                     Divider()
+
                     if (menuItems.isEmpty()) {
                         Text("No items yet. Add your first menu item below.", Modifier.padding(12.dp))
                     } else {
@@ -82,10 +85,14 @@ fun MenuManagementScreen() {
                                 ) {
                                     Column(Modifier.weight(1f)) {
                                         Text(mi.name, style = MaterialTheme.typography.titleSmall)
-                                        Text("£${formatPounds(mi.priceCents)} • ${mi.category}", style = MaterialTheme.typography.bodySmall)
+                                        Text(
+                                            "£${formatPounds(mi.priceCents)} • ${mi.category}",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
                                     }
                                     Row {
                                         TextButton(onClick = {
+                                            // preload fields for quick edit
                                             showAdd = true
                                             name = mi.name
                                             price = (mi.priceCents / 100.0).toString()
@@ -104,12 +111,16 @@ fun MenuManagementScreen() {
                 }
             }
 
+            // Add / Edit form
             if (showAdd) {
                 Spacer(Modifier.width(0.dp))
                 ElevatedCard(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp)) {
-                        Text(if (isEditingExisting(menuItems, name, category, price)) "Edit Item" else "New Item",
-                            style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            if (isEditingExisting(menuItems, name, category, price)) "Edit Item" else "New Item",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+
                         TextField(
                             value = name,
                             onValueChange = { name = it },
@@ -134,6 +145,7 @@ fun MenuManagementScreen() {
                                 .fillMaxWidth()
                                 .padding(top = 8.dp, bottom = 8.dp)
                         )
+
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.End,
@@ -148,10 +160,11 @@ fun MenuManagementScreen() {
                                 val cents = parsePriceToCents(price)
                                 if (cents != null && name.isNotBlank() && category.isNotBlank()) {
                                     val existingId = menuItems.find {
-                                        it.name.equals(name.trim(), true) &&
-                                        it.category.equals(category.trim(), true)
+                                        it.name.equals(name.trim(), ignoreCase = true) &&
+                                        it.category.equals(category.trim(), ignoreCase = true)
                                     }?.id
                                     val id = existingId ?: UUID.randomUUID().toString()
+
                                     scope.launch(Dispatchers.IO) {
                                         Repo.upsertMenu(
                                             MenuItemEntity(
