@@ -12,7 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.leson.pos.ui.screens.MenuManagementScreen
 import com.leson.pos.ui.screens.MenuScreen
 import com.leson.pos.ui.screens.TablesScreen
-import com.leson.pos.ui.screens.CartScreen
+//import com.leson.pos.ui.screens.CartScreen
 import com.leson.pos.data.repo.Repo
 
 @AndroidEntryPoint
@@ -35,11 +35,16 @@ fun AppNav() {
           onManageMenu = { nav.navigate("manageMenu") }
         )
       }
+
       composable("menu/{table}") {
         val table = it.arguments?.getString("table") ?: "T1"
         MenuScreen(table)
       }
-      composable("cart/{orderId}") { CartScreen() }
+      //composable("cart/{orderId}") { CartScreen() }
+      composable("cart/{orderId}") {
+        // Temporary stub to avoid CartScreen IR lowering crash.
+        androidx.compose.material3.TopAppBar(title = { Text("Cart (temporarily disabled)") })
+      }
       composable("manageMenu") { MenuManagementScreen() }
     }
   }
