@@ -29,11 +29,12 @@ android {
 
   // Make Kotlin bytecode target 17 (keeps Compose happy too)
   kotlinOptions {
-    jvmTarget = "17"
-    freeCompilerArgs += listOf(
-        "-Xopt-in=androidx.compose.material3.ExperimentalMaterial3Api"
-    )
+      jvmTarget = "17"
+      freeCompilerArgs += listOf(
+          "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+      )
   }
+
   packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
 }
 // Tell Kotlin to use the Java 17 toolchain
