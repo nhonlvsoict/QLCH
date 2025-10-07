@@ -77,6 +77,6 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     // Add JavaPoet dependency for annotation processing to fix Hilt AggregateDeps error
     
-        implementation("com.squareup:javapoet:1.13.0")
+
 kapt("com.squareup:javapoet:1.13.0")
 }
