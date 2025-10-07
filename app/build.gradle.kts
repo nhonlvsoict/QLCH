@@ -1,5 +1,7 @@
 /*
  * Modified build.gradle.kts for dev branch with fixed Hilt AggregateDeps error.
+// trigger build
+
  * This file is based on the current dev branch build.gradle.kts but adds an explicit
  * kapt dependency for JavaPoet to ensure the annotation processor uses version 1.13.0.
  */
