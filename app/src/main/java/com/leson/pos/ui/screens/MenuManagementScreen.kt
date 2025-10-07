@@ -27,6 +27,7 @@ import com.leson.pos.data.repo.Repo
 import kotlinx.coroutines.launch
 import java.util.UUID
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.layout.width
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
